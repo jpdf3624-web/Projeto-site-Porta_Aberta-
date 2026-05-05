@@ -1,0 +1,392 @@
+
+<style>
+  :root {
+    --pcd-teal: #1D9E75; --pcd-teal-light: #E1F5EE; --pcd-teal-dark: #085041;
+    --pcd-blue: #378ADD; --pcd-blue-light: #E6F1FB; --pcd-blue-dark: #0C447C;
+    --pcd-amber: #BA7517; --pcd-amber-light: #FAEEDA; --pcd-amber-dark: #633806;
+    --pcd-coral: #D85A30; --pcd-coral-light: #FAECE7; --pcd-coral-dark: #4A1B0C;
+    --pcd-green: #639922; --pcd-green-light: #EAF3DE; --pcd-green-dark: #173404;
+    --pcd-purple: #7F77DD; --pcd-purple-light: #EEEDFE; --pcd-purple-dark: #26215C;
+    --font-size-base: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-size: var(--font-size-base); }
+  .app { display: flex; height: 100vh; min-height: 600px; background: var(--color-background-tertiary); font-family: var(--font-sans); }
+  .sidebar { width: 220px; background: var(--color-background-primary); border-right: 0.5px solid var(--color-border-tertiary); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 20px 16px 16px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .logo-badge { display: inline-flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--pcd-teal); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { fill: white; width: 18px; height: 18px; }
+  .logo-text { font-size: 14px; font-weight: 500; color: var(--color-text-primary); line-height: 1.2; }
+  .logo-sub { font-size: 11px; color: var(--color-text-secondary); }
+  .sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--border-radius-md); cursor: pointer; font-size: 13px; color: var(--color-text-secondary); border: none; background: transparent; width: 100%; text-align: left; transition: background 0.15s; }
+  .nav-item:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .nav-item.active { background: var(--pcd-teal-light); color: var(--pcd-teal-dark); font-weight: 500; }
+  .nav-icon { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.7; }
+  .nav-item.active .nav-icon { opacity: 1; }
+  .sidebar-bottom { padding: 12px 8px; border-top: 0.5px solid var(--color-border-tertiary); }
+  .access-controls { padding: 10px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); }
+  .access-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 8px; font-weight: 500; }
+  .access-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+  .access-btn { font-size: 11px; padding: 3px 7px; border: 0.5px solid var(--color-border-secondary); border-radius: 4px; background: transparent; cursor: pointer; color: var(--color-text-secondary); }
+  .access-btn:hover, .access-btn.active { background: var(--pcd-teal-light); color: var(--pcd-teal-dark); border-color: var(--pcd-teal); }
+  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .topbar { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .page-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .btn { padding: 7px 14px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-primary); font-family: var(--font-sans); }
+  .btn:hover { background: var(--color-background-secondary); }
+  .btn-primary { background: var(--pcd-teal); color: white; border-color: var(--pcd-teal); font-weight: 500; }
+  .btn-primary:hover { background: var(--pcd-teal-dark); border-color: var(--pcd-teal-dark); }
+  .content { padding: 24px; flex: 1; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 16px; }
+  .metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+  .metric-value { font-size: 26px; font-weight: 500; color: var(--color-text-primary); line-height: 1; }
+  .metric-sub { font-size: 11px; margin-top: 4px; }
+  .metric-up { color: var(--pcd-teal); }
+  .metric-warn { color: var(--pcd-amber); }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; }
+  .chart-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 12px; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .list-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; }
+  .list-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .list-item:last-child { border-bottom: none; }
+  .list-name { font-size: 13px; color: var(--color-text-primary); font-weight: 500; }
+  .list-info { font-size: 12px; color: var(--color-text-secondary); }
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 999px; font-weight: 500; }
+  .badge-pending { background: var(--pcd-amber-light); color: var(--pcd-amber-dark); }
+  .badge-active { background: var(--pcd-blue-light); color: var(--pcd-blue-dark); }
+  .badge-done { background: var(--pcd-green-light); color: var(--pcd-green-dark); }
+  .badge-visual { background: var(--pcd-purple-light); color: var(--pcd-purple-dark); }
+  .badge-motor { background: var(--pcd-coral-light); color: var(--pcd-coral-dark); }
+  .badge-auditory { background: var(--pcd-blue-light); color: var(--pcd-blue-dark); }
+  .badge-intellectual { background: var(--pcd-amber-light); color: var(--pcd-amber-dark); }
+  .badge-multiple { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+  .form-section { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 24px; margin-bottom: 16px; }
+  .form-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+  .form-input { padding: 8px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); }
+  .form-input:focus { outline: 2px solid var(--pcd-teal); outline-offset: 1px; border-color: transparent; }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-primary); cursor: pointer; }
+  .checkbox-item input { accent-color: var(--pcd-teal); width: 14px; height: 14px; }
+  .patients-table { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .table-header { display: grid; grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr; gap: 12px; padding: 10px 16px; background: var(--color-background-secondary); font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+  .table-row { display: grid; grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr; gap: 12px; padding: 12px 16px; border-top: 0.5px solid var(--color-border-tertiary); align-items: center; font-size: 13px; color: var(--color-text-primary); }
+  .table-row:hover { background: var(--color-background-secondary); }
+  .patient-name-cell { display: flex; align-items: center; gap: 8px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .search-bar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+  .search-input { flex: 1; padding: 8px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); }
+  .search-input:focus { outline: 2px solid var(--pcd-teal); outline-offset: 1px; }
+  .filter-select { padding: 7px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); cursor: pointer; }
+  .ai-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 20px; margin-bottom: 16px; }
+  .ai-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .ai-badge { background: var(--pcd-purple-light); color: var(--pcd-purple-dark); font-size: 11px; padding: 3px 8px; border-radius: 999px; font-weight: 500; }
+  .insight-list { display: flex; flex-direction: column; gap: 10px; }
+  .insight-item { display: flex; gap: 12px; padding: 12px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); }
+  .insight-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+  .insight-text .insight-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+  .insight-text .insight-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+  .ai-prompt-area { display: flex; gap: 8px; margin-top: 16px; }
+  .ai-input { flex: 1; padding: 9px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); }
+  .ai-input:focus { outline: 2px solid var(--pcd-teal); outline-offset: 1px; }
+  .ai-response { margin-top: 16px; padding: 14px; background: var(--pcd-teal-light); border-radius: var(--border-radius-md); border-left: 3px solid var(--pcd-teal); font-size: 13px; color: var(--pcd-teal-dark); line-height: 1.6; display: none; }
+  .ai-loading { display: none; align-items: center; gap: 8px; color: var(--color-text-secondary); font-size: 13px; margin-top: 12px; }
+  .dot-anim { display: flex; gap: 3px; }
+  .dot-anim span { width: 5px; height: 5px; background: var(--pcd-teal); border-radius: 50%; animation: bounce 0.9s infinite; }
+  .dot-anim span:nth-child(2) { animation-delay: 0.15s; }
+  .dot-anim span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+  .patterns-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .pattern-card { padding: 14px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); }
+  .pattern-num { font-size: 22px; font-weight: 500; }
+  .pattern-label { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .high-contrast .metric-card { background: #000; border: 2px solid #fff; }
+  .high-contrast .chart-card, .high-contrast .list-card, .high-contrast .ai-card { background: #000; border: 2px solid #fff; }
+  .high-contrast .nav-item.active { background: #fff; color: #000; }
+  .high-contrast .badge-done { background: #000; color: #0f0; border: 1px solid #0f0; }
+  .high-contrast .badge-active { background: #000; color: #0cf; border: 1px solid #0cf; }
+  .high-contrast .badge-pending { background: #000; color: #ff0; border: 1px solid #ff0; }
+  .skip-link { position: absolute; left: -9999px; top: 4px; z-index: 999; background: var(--pcd-teal); color: white; padding: 8px 16px; border-radius: 4px; font-size: 13px; text-decoration: none; }
+  .skip-link:focus { left: 4px; }
+  .notif { position: fixed; bottom: 20px; right: 20px; background: var(--pcd-teal); color: white; padding: 12px 18px; border-radius: var(--border-radius-md); font-size: 13px; display: none; z-index: 999; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+
+<a href="#main-content" class="skip-link">Ir para conteúdo principal</a>
+<h2 class="sr-only">Porta Aberta — sistema de atendimento a pessoas com deficiência.</h2>
+
+<div class="app" id="app" role="application" aria-label="Porta Aberta">
+  <nav class="sidebar" role="navigation" aria-label="Menu principal">
+    <div class="sidebar-logo">
+      <div class="logo-badge">
+        <div class="logo-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z"/></svg>
+        </div>
+        <div>
+          <div class="logo-text">Porta Aberta</div>
+          <div class="logo-sub">Atendimento inclusivo</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-nav" role="list">
+      <button class="nav-item active" onclick="showSection('dashboard')" aria-current="page" role="listitem">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="showSection('patients')" role="listitem">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        Pessoas cadastradas
+      </button>
+      <button class="nav-item" onclick="showSection('register')" role="listitem">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+        Registrar atendimento
+      </button>
+      <button class="nav-item" onclick="showSection('analysis')" role="listitem">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        Análise inteligente
+      </button>
+      <button class="nav-item" onclick="showSection('new-patient')" role="listitem">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        Novo cadastro
+      </button>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="access-controls" role="region" aria-label="Controles de acessibilidade">
+        <div class="access-label">Acessibilidade</div>
+        <div class="access-btns">
+          <button class="access-btn" onclick="toggleFontSize()" aria-label="Alternar tamanho da fonte">A+</button>
+          <button class="access-btn" onclick="toggleContrast()" aria-label="Alternar alto contraste">HC</button>
+          <button class="access-btn" onclick="announcePage()" aria-label="Anunciar página atual">SR</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main" role="main" id="main-content">
+    <div class="topbar">
+      <div class="page-title" id="page-title" aria-live="polite">Dashboard</div>
+      <div class="topbar-right">
+        <span style="font-size:12px;color:var(--color-text-secondary)">Ana Lima · Atendente</span>
+        <button class="btn btn-primary" onclick="showSection('new-patient')">+ Novo cadastro</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="section active" id="section-dashboard" role="region" aria-label="Dashboard principal">
+        <div class="metrics-grid" role="list">
+          <div class="metric-card" role="listitem"><div class="metric-label">Total atendidos</div><div class="metric-value">248</div><div class="metric-sub metric-up">+12 este mês</div></div>
+          <div class="metric-card" role="listitem"><div class="metric-label">Em andamento</div><div class="metric-value" style="color:var(--pcd-blue)">34</div><div class="metric-sub" style="color:var(--color-text-secondary)">hoje</div></div>
+          <div class="metric-card" role="listitem"><div class="metric-label">Pendentes</div><div class="metric-value" style="color:var(--pcd-amber)">17</div><div class="metric-sub metric-warn">requer atenção</div></div>
+          <div class="metric-card" role="listitem"><div class="metric-label">Satisfação média</div><div class="metric-value" style="color:var(--pcd-teal)">4.8</div><div class="metric-sub metric-up">de 5.0</div></div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-title">Atendimentos por tipo de deficiência</div>
+            <div class="legend-row">
+              <span class="legend-item"><span class="legend-dot" style="background:#7F77DD"></span>Visual 31%</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>Auditiva 24%</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#D85A30"></span>Motora 28%</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#BA7517"></span>Intelectual 17%</span>
+            </div>
+            <div style="position:relative;height:200px"><canvas id="chartTipo" role="img" aria-label="Gráfico de distribuição por tipo de deficiência">Visual 31%, Auditiva 24%, Motora 28%, Intelectual 17%</canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Atendimentos por dia (últimos 7 dias)</div>
+            <div class="legend-row">
+              <span class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Finalizados</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#B5D4F4"></span>Pendentes</span>
+            </div>
+            <div style="position:relative;height:200px"><canvas id="chartDia" role="img" aria-label="Gráfico de atendimentos por dia da semana">Seg:18, Ter:24, Qua:21, Qui:27, Sex:30, Sáb:15, Dom:8</canvas></div>
+          </div>
+        </div>
+        <div class="bottom-row">
+          <div class="list-card">
+            <div class="chart-title">Atendimentos recentes</div>
+            <div role="list">
+              <div class="list-item" role="listitem"><div><div class="list-name">Carla Mendes</div><div class="list-info">Visual · há 20min</div></div><span class="badge badge-active">Em andamento</span></div>
+              <div class="list-item" role="listitem"><div><div class="list-name">Roberto Silva</div><div class="list-info">Motora · há 1h</div></div><span class="badge badge-done">Finalizado</span></div>
+              <div class="list-item" role="listitem"><div><div class="list-name">Fernanda Costa</div><div class="list-info">Auditiva · há 2h</div></div><span class="badge badge-pending">Pendente</span></div>
+              <div class="list-item" role="listitem"><div><div class="list-name">Marcos Pereira</div><div class="list-info">Intelectual · ontem</div></div><span class="badge badge-done">Finalizado</span></div>
+            </div>
+          </div>
+          <div class="list-card">
+            <div class="chart-title">Principais demandas relatadas</div>
+            <div role="list">
+              <div class="list-item" role="listitem"><div class="list-name">Acesso a transporte adaptado</div><span style="font-size:13px;font-weight:500;color:var(--pcd-teal)">47x</span></div>
+              <div class="list-item" role="listitem"><div class="list-name">Benefício LOAS/BPC</div><span style="font-size:13px;font-weight:500;color:var(--pcd-teal)">38x</span></div>
+              <div class="list-item" role="listitem"><div class="list-name">Laudos e documentação</div><span style="font-size:13px;font-weight:500;color:var(--pcd-teal)">31x</span></div>
+              <div class="list-item" role="listitem"><div class="list-name">Saúde e reabilitação</div><span style="font-size:13px;font-weight:500;color:var(--pcd-teal)">27x</span></div>
+              <div class="list-item" role="listitem"><div class="list-name">Inclusão no mercado de trabalho</div><span style="font-size:13px;font-weight:500;color:var(--pcd-teal)">19x</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-patients" role="region" aria-label="Pessoas cadastradas">
+        <div class="search-bar" role="search">
+          <input class="search-input" type="search" placeholder="Buscar pelo nome..." aria-label="Buscar pessoa" id="searchInput" oninput="filterTable()">
+          <select class="filter-select" aria-label="Filtrar por deficiência" onchange="filterTable()" id="filterDef">
+            <option value="">Todas as deficiências</option>
+            <option>Visual</option><option>Auditiva</option><option>Motora</option><option>Intelectual</option><option>Múltipla</option>
+          </select>
+          <select class="filter-select" aria-label="Filtrar por status" onchange="filterTable()" id="filterStatus">
+            <option value="">Todos os status</option>
+            <option>Em andamento</option><option>Pendente</option><option>Finalizado</option>
+          </select>
+        </div>
+        <div class="patients-table" role="table" aria-label="Lista de pessoas">
+          <div class="table-header" role="row"><span role="columnheader">Nome</span><span role="columnheader">Idade</span><span role="columnheader">Deficiência</span><span role="columnheader">Status</span><span role="columnheader">Ações</span></div>
+          <div id="tableBody" role="rowgroup">
+            <div class="table-row" role="row" data-def="Visual" data-status="Em andamento"><div class="patient-name-cell" role="cell"><div class="avatar" style="background:var(--pcd-purple-light);color:var(--pcd-purple-dark)">CM</div><div><div style="font-weight:500">Carla Mendes</div><div style="font-size:11px;color:var(--color-text-secondary)">2 atendimentos</div></div></div><div role="cell">34</div><div role="cell"><span class="badge badge-visual">Visual</span></div><div role="cell"><span class="badge badge-active">Em andamento</span></div><div role="cell"><button class="btn" style="font-size:11px;padding:4px 8px" onclick="showPatientDetail('Carla Mendes')">Ver perfil</button></div></div>
+            <div class="table-row" role="row" data-def="Motora" data-status="Finalizado"><div class="patient-name-cell" role="cell"><div class="avatar" style="background:var(--pcd-coral-light);color:var(--pcd-coral-dark)">RS</div><div><div style="font-weight:500">Roberto Silva</div><div style="font-size:11px;color:var(--color-text-secondary)">5 atendimentos</div></div></div><div role="cell">52</div><div role="cell"><span class="badge badge-motor">Motora</span></div><div role="cell"><span class="badge badge-done">Finalizado</span></div><div role="cell"><button class="btn" style="font-size:11px;padding:4px 8px" onclick="showPatientDetail('Roberto Silva')">Ver perfil</button></div></div>
+            <div class="table-row" role="row" data-def="Auditiva" data-status="Pendente"><div class="patient-name-cell" role="cell"><div class="avatar" style="background:var(--pcd-blue-light);color:var(--pcd-blue-dark)">FC</div><div><div style="font-weight:500">Fernanda Costa</div><div style="font-size:11px;color:var(--color-text-secondary)">1 atendimento</div></div></div><div role="cell">28</div><div role="cell"><span class="badge badge-auditory">Auditiva</span></div><div role="cell"><span class="badge badge-pending">Pendente</span></div><div role="cell"><button class="btn" style="font-size:11px;padding:4px 8px" onclick="showPatientDetail('Fernanda Costa')">Ver perfil</button></div></div>
+            <div class="table-row" role="row" data-def="Intelectual" data-status="Finalizado"><div class="patient-name-cell" role="cell"><div class="avatar" style="background:var(--pcd-amber-light);color:var(--pcd-amber-dark)">MP</div><div><div style="font-weight:500">Marcos Pereira</div><div style="font-size:11px;color:var(--color-text-secondary)">3 atendimentos</div></div></div><div role="cell">41</div><div role="cell"><span class="badge badge-intellectual">Intelectual</span></div><div role="cell"><span class="badge badge-done">Finalizado</span></div><div role="cell"><button class="btn" style="font-size:11px;padding:4px 8px" onclick="showPatientDetail('Marcos Pereira')">Ver perfil</button></div></div>
+            <div class="table-row" role="row" data-def="Múltipla" data-status="Em andamento"><div class="patient-name-cell" role="cell"><div class="avatar" style="background:var(--color-background-secondary);color:var(--color-text-secondary)">JO</div><div><div style="font-weight:500">Juliana Oliveira</div><div style="font-size:11px;color:var(--color-text-secondary)">7 atendimentos</div></div></div><div role="cell">19</div><div role="cell"><span class="badge badge-multiple">Múltipla</span></div><div role="cell"><span class="badge badge-active">Em andamento</span></div><div role="cell"><button class="btn" style="font-size:11px;padding:4px 8px" onclick="showPatientDetail('Juliana Oliveira')">Ver perfil</button></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-register" role="region" aria-label="Registrar atendimento">
+        <div class="form-section">
+          <div class="form-title">Informações do atendimento</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label" for="reg-person">Pessoa atendida</label><select class="form-input" id="reg-person" aria-required="true"><option value="">Selecionar pessoa...</option><option>Carla Mendes</option><option>Roberto Silva</option><option>Fernanda Costa</option><option>Marcos Pereira</option><option>Juliana Oliveira</option></select></div>
+            <div class="form-group"><label class="form-label" for="reg-responsible">Responsável</label><input class="form-input" id="reg-responsible" type="text" value="Ana Lima" aria-required="true"></div>
+            <div class="form-group"><label class="form-label" for="reg-date">Data</label><input class="form-input" id="reg-date" type="date" aria-required="true"></div>
+            <div class="form-group"><label class="form-label" for="reg-class">Classificação</label><select class="form-input" id="reg-class"><option>Orientação e informação</option><option>Solicitação de benefício</option><option>Encaminhamento</option><option>Emergência</option><option>Acompanhamento</option></select></div>
+            <div class="form-group full"><label class="form-label" for="reg-relato">O que a pessoa relatou</label><textarea class="form-input form-textarea" id="reg-relato" placeholder="Descreva detalhadamente o que foi relatado..." rows="4" aria-required="true" aria-describedby="relato-hint"></textarea><span id="relato-hint" style="font-size:11px;color:var(--color-text-secondary)">Seja específico — este texto será analisado pela IA para gerar insights.</span></div>
+            <div class="form-group full"><label class="form-label" for="reg-obs">Observações internas</label><textarea class="form-input form-textarea" id="reg-obs" placeholder="Notas internas, próximos passos..." rows="3"></textarea></div>
+            <div class="form-group full"><label class="form-label">Anexar arquivos</label><div style="border:1px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:20px;text-align:center;color:var(--color-text-secondary);font-size:13px;cursor:pointer" role="button" tabindex="0" aria-label="Área para anexar arquivos">Clique ou arraste arquivos aqui (áudio, documentos, imagens)</div></div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="saveAttendance()">Salvar atendimento</button>
+            <button class="btn" onclick="showSection('dashboard')">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-analysis" role="region" aria-label="Análise inteligente">
+        <div class="ai-card">
+          <div class="ai-header"><div style="font-size:14px;font-weight:500;color:var(--color-text-primary)">Análise com IA</div><span class="ai-badge">Claude IA</span></div>
+          <div class="patterns-grid" role="list">
+            <div class="pattern-card" role="listitem"><div class="pattern-num" style="color:var(--pcd-teal)">68%</div><div class="pattern-label">relatam dificuldade de acesso a serviços públicos</div></div>
+            <div class="pattern-card" role="listitem"><div class="pattern-num" style="color:var(--pcd-blue)">41%</div><div class="pattern-label">necessitam de encaminhamento imediato</div></div>
+            <div class="pattern-card" role="listitem"><div class="pattern-num" style="color:var(--pcd-coral)">23%</div><div class="pattern-label">buscam por benefícios não conhecidos</div></div>
+          </div>
+          <div class="chart-title" style="margin-bottom:10px">Insights gerados automaticamente</div>
+          <div class="insight-list">
+            <div class="insight-item"><div class="insight-icon" style="background:var(--pcd-teal-light)">&#128202;</div><div class="insight-text"><div class="insight-title">Pico de demanda às terças e quintas</div><div class="insight-desc">Com base nos últimos 30 dias, há 40% mais atendimentos no meio da semana. Recomenda-se reforço de equipe nesses dias.</div></div></div>
+            <div class="insight-item"><div class="insight-icon" style="background:var(--pcd-amber-light)">&#9888;</div><div class="insight-text"><div class="insight-title">17 pessoas aguardam retorno há mais de 7 dias</div><div class="insight-desc">Atendimentos pendentes com prazo vencido. Sugestão: contato proativo para reagendamento.</div></div></div>
+            <div class="insight-item"><div class="insight-icon" style="background:var(--pcd-blue-light)">&#128161;</div><div class="insight-text"><div class="insight-title">Deficiência visual: maior crescimento este mês</div><div class="insight-desc">+22% em relação ao mês anterior. Considerar treinamento específico da equipe e materiais em braile.</div></div></div>
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:0.5px solid var(--color-border-tertiary)">
+            <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">Pergunte à IA sobre os dados</div>
+            <div class="ai-prompt-area">
+              <input class="ai-input" id="aiInput" type="text" placeholder="Ex: Quais as principais dificuldades das pessoas com deficiência motora?" aria-label="Pergunta para análise com IA">
+              <button class="btn btn-primary" onclick="askAI()">Analisar ↗</button>
+            </div>
+            <div class="ai-loading" id="aiLoading" aria-live="polite"><div class="dot-anim" aria-hidden="true"><span></span><span></span><span></span></div>Analisando com IA...</div>
+            <div class="ai-response" id="aiResponse" role="alert" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-new-patient" role="region" aria-label="Novo cadastro">
+        <div class="form-section">
+          <div class="form-title">Dados pessoais</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label" for="np-name">Nome completo</label><input class="form-input" id="np-name" type="text" placeholder="Nome completo" aria-required="true"></div>
+            <div class="form-group"><label class="form-label" for="np-age">Idade</label><input class="form-input" id="np-age" type="number" min="0" max="120" placeholder="Ex: 35" aria-required="true"></div>
+            <div class="form-group"><label class="form-label" for="np-cpf">CPF</label><input class="form-input" id="np-cpf" type="text" placeholder="000.000.000-00"></div>
+            <div class="form-group"><label class="form-label" for="np-phone">Telefone</label><input class="form-input" id="np-phone" type="tel" placeholder="(00) 00000-0000"></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-title">Deficiência e necessidades</div>
+          <div class="form-grid">
+            <div class="form-group full"><label class="form-label">Tipo(s) de deficiência</label><div class="checkbox-group" role="group" aria-label="Tipos de deficiência"><label class="checkbox-item"><input type="checkbox"> Deficiência visual</label><label class="checkbox-item"><input type="checkbox"> Deficiência auditiva</label><label class="checkbox-item"><input type="checkbox"> Deficiência motora</label><label class="checkbox-item"><input type="checkbox"> Deficiência intelectual</label><label class="checkbox-item"><input type="checkbox"> Psicossocial</label><label class="checkbox-item"><input type="checkbox"> TEA (Autismo)</label></div></div>
+            <div class="form-group full"><label class="form-label" for="np-needs">Necessidades específicas</label><textarea class="form-input form-textarea" id="np-needs" placeholder="Descreva as necessidades de comunicação, mobilidade, acessibilidade..."></textarea></div>
+            <div class="form-group full"><label class="form-label" for="np-obs">Observações</label><textarea class="form-input form-textarea" id="np-obs" placeholder="Informações adicionais relevantes..."></textarea></div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="savePatient()">Salvar cadastro</button>
+            <button class="btn" onclick="showSection('patients')">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif" role="alert" aria-live="assertive"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let bigFont = false, highContrast = false;
+document.getElementById('reg-date').value = new Date().toISOString().split('T')[0];
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
+  document.getElementById('section-' + id).classList.add('active');
+  const titles = { dashboard:'Dashboard', patients:'Pessoas cadastradas', register:'Registrar atendimento', analysis:'Análise inteligente', 'new-patient':'Novo cadastro' };
+  document.getElementById('page-title').textContent = titles[id] || id;
+  const navMap = { dashboard:0, patients:1, register:2, analysis:3, 'new-patient':4 };
+  const navItems = document.querySelectorAll('.nav-item');
+  if (navMap[id] !== undefined) { navItems[navMap[id]].classList.add('active'); navItems[navMap[id]].setAttribute('aria-current','page'); }
+  document.getElementById('main-content').scrollTop = 0;
+}
+function toggleFontSize() { bigFont = !bigFont; document.documentElement.style.setProperty('--font-size-base', bigFont ? '19px' : '16px'); document.querySelectorAll('.access-btn')[0].classList.toggle('active', bigFont); showNotif(bigFont ? 'Fonte aumentada' : 'Fonte normal'); }
+function toggleContrast() { highContrast = !highContrast; document.getElementById('app').classList.toggle('high-contrast', highContrast); document.querySelectorAll('.access-btn')[1].classList.toggle('active', highContrast); showNotif(highContrast ? 'Alto contraste ativado' : 'Contraste normal'); }
+function announcePage() { showNotif('Página atual: ' + document.getElementById('page-title').textContent); }
+function showNotif(msg) { const n = document.getElementById('notif'); n.textContent = msg; n.style.display = 'block'; setTimeout(() => n.style.display = 'none', 2500); }
+function filterTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const def = document.getElementById('filterDef').value;
+  const status = document.getElementById('filterStatus').value;
+  document.querySelectorAll('#tableBody .table-row').forEach(row => {
+    const name = row.querySelector('.patient-name-cell div div')?.textContent.toLowerCase() || '';
+    const matchName = !search || name.includes(search);
+    const matchDef = !def || row.dataset.def === def;
+    const matchStatus = !status || row.dataset.status === status;
+    row.style.display = (matchName && matchDef && matchStatus) ? '' : 'none';
+  });
+}
+function showPatientDetail(name) { sendPrompt('Quero ver o perfil completo de ' + name + ' no Porta Aberta, com histórico de atendimentos e necessidades específicas.'); }
+function saveAttendance() { if (!document.getElementById('reg-person').value || !document.getElementById('reg-relato').value) { showNotif('Preencha os campos obrigatórios'); return; } showNotif('Atendimento salvo!'); setTimeout(() => showSection('dashboard'), 800); }
+function savePatient() { if (!document.getElementById('np-name').value || !document.getElementById('np-age').value) { showNotif('Preencha nome e idade'); return; } showNotif('Cadastro salvo!'); setTimeout(() => showSection('patients'), 800); }
+async function askAI() {
+  const input = document.getElementById('aiInput');
+  const question = input.value.trim();
+  if (!question) { showNotif('Digite uma pergunta'); return; }
+  const loading = document.getElementById('aiLoading');
+  const responseDiv = document.getElementById('aiResponse');
+  loading.style.display = 'flex'; responseDiv.style.display = 'none'; input.disabled = true;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: 'Você é um assistente de análise do sistema Porta Aberta, plataforma de atendimento a pessoas com deficiência (PCD) no Brasil. Dados: 248 pessoas atendidas, 31% visual, 24% auditiva, 28% motora, 17% intelectual. Principais demandas: transporte adaptado (47), LOAS/BPC (38), laudos (31), saúde (27), trabalho (19). Satisfação: 4.8/5. Responda em português de forma clara, empática e prática para a equipe de atendimento. Máximo 3 parágrafos.', messages: [{ role: 'user', content: question }] }) });
+    const data = await resp.json();
+    responseDiv.textContent = data.content?.map(i => i.text || '').join('') || 'Não foi possível obter resposta.';
+    responseDiv.style.display = 'block';
+  } catch(e) { responseDiv.textContent = 'Erro ao conectar com a IA.'; responseDiv.style.display = 'block'; }
+  loading.style.display = 'none'; input.disabled = false;
+}
+document.getElementById('aiInput').addEventListener('keydown', e => { if (e.key === 'Enter') askAI(); });
+document.addEventListener('keydown', e => { if (e.altKey) { const m = {'1':'dashboard','2':'patients','3':'register','4':'analysis','5':'new-patient'}; if (m[e.key]) showSection(m[e.key]); } });
+new Chart(document.getElementById('chartTipo'), { type: 'doughnut', data: { labels: ['Visual','Auditiva','Motora','Intelectual'], datasets: [{ data: [31,24,28,17], backgroundColor: ['#7F77DD','#378ADD','#D85A30','#BA7517'], borderWidth: 2, borderColor: 'transparent' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' } });
+new Chart(document.getElementById('chartDia'), { type: 'bar', data: { labels: ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'], datasets: [{ label: 'Finalizados', data: [15,20,18,22,26,12,6], backgroundColor: '#1D9E75', borderRadius: 4 }, { label: 'Pendentes', data: [3,4,3,5,4,3,2], backgroundColor: '#B5D4F4', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 } } }, y: { stacked: true, grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { font: { size: 11 } } } } } });
+</script>
